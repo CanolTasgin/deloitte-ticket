@@ -7,11 +7,12 @@ import Table from "react-bootstrap/Table";
 export default function Home() {
   const [tickets, setTickets] = useState([]);
   const [keyword, setKeyword] = useState("");
+  const [pageNum, setPage] = useState(0);
 
   const searchEvents = async () => {
     try {
       const res = await axios.get(
-        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=ETG7Ye6TEGdENcwB6NR0HjFcLimxZyxm&size=20&keyword=${keyword}`
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=ETG7Ye6TEGdENcwB6NR0HjFcLimxZyxm&size=10&keyword=${keyword}&${pageNum.toString()}`
       );
       setTickets(res);
     } catch (err) {
@@ -43,7 +44,7 @@ export default function Home() {
   return (
     <Container fluid="sm">
       <h1>Home page</h1>
-      <Form inline>
+      <Form inline className="d-flex">
         <FormControl
           onChange={handleSearchInput}
           value={keyword}
@@ -55,11 +56,10 @@ export default function Home() {
           Search
         </Button>
       </Form>
-      <p>keyword is {keyword}</p>
       {tickets && tickets.data && tickets.data.page.totalElements > 0 ? (
         <Fragment>
-          <h2>{tickets && tickets.data.page.totalElements} results found</h2>
-          <Table striped bordered hover>
+          {/* <h2>{tickets && tickets.data.page.totalElements} results found</h2> */}
+          <Table striped bordered hover style={{ marginTop: 10 }}>
             <thead>
               <tr>
                 <th>#</th>
@@ -68,6 +68,7 @@ export default function Home() {
                 <th>Date</th>
                 <th>Time</th>
                 <th>Status</th>
+                <th>Details</th>
               </tr>
             </thead>
             <tbody>
@@ -102,6 +103,15 @@ export default function Home() {
                       event.dates.status &&
                       event.dates.status.code}
                   </td>
+                  <td>
+                    <Link to={`/event/${event.id}`}>
+                      <Button
+                        style={{ backgroundColor: "#000000", border: "none" }}
+                      >
+                        >
+                      </Button>
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -112,7 +122,6 @@ export default function Home() {
           <h2>No results found</h2>
         </Fragment>
       )}
-      <Link to="/event/1">Event Details</Link>
     </Container>
   );
 }

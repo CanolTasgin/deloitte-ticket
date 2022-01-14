@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+#menu {
+  list-style-type: none;
+  overflow-x: scroll;
+  width: auto;
+}
+ul#menu li {
+  display: inline;
+  padding: 1vw;
+}
+
+ul#menu li img {
+  display: inline;
+  padding: 20px;
+  width: 15vw;
+}
+.content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
