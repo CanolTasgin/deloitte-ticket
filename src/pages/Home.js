@@ -1,18 +1,28 @@
 import React, { useEffect, useState, Fragment } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { Container, Form, FormControl, Button } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
+import Pagination from "../components/Pagination";
+import spinner from "../assets/spinner.gif";
 
 export default function Home() {
+  let [searchParams, setSearchParams] = useSearchParams();
   const [tickets, setTickets] = useState([]);
-  const [keyword, setKeyword] = useState("");
-  const [pageNum, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [size, setSize] = useState(10);
+  const [searchKey, setKeyword] = useState("");
+
+  let page = searchParams.get("page") || 1;
+  let keyword = searchParams.get("keyword") || "";
 
   const searchEvents = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(
-        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=ETG7Ye6TEGdENcwB6NR0HjFcLimxZyxm&size=10&keyword=${keyword}&${pageNum.toString()}`
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=ETG7Ye6TEGdENcwB6NR0HjFcLimxZyxm&size=${size}&keyword=${keyword}&page=${
+          page - 1
+        }`
       );
       setTickets(res);
     } catch (err) {
@@ -21,15 +31,34 @@ export default function Home() {
         err
       );
     }
+    setLoading(false);
   };
 
   const handleSearchInput = (e) => {
+    e.preventDefault();
+    if (e.key === "Enter") {
+      setSearchParams({ keyword: searchKey });
+    }
     setKeyword(e.target.value);
   };
 
-  const handleSearchSubmit = () => {
-    if (keyword) {
+  const handleKeyDown = (event) => {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      setSearchParams({ keyword: searchKey });
+    }
+  };
+
+  const pageSizeEnter = (event) => {
+    if (event.keyCode === 13) {
+      event.preventDefault();
       searchEvents();
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    if (searchKey) {
+      setSearchParams({ keyword: searchKey });
     } else {
       alert("Please enter some search text!");
     }
@@ -37,17 +66,38 @@ export default function Home() {
 
   useEffect(() => {
     searchEvents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [keyword, page]);
 
-  console.log("response:", tickets);
   return (
     <Container fluid="sm">
       <h1>Home page</h1>
-      <Form inline className="d-flex">
+      <Form.Label htmlFor="basic-url">Page Size</Form.Label>
+      <Form
+        inline
+        className="d-flex"
+        size="sm"
+        style={{ width: 300, marginBottom: 10 }}
+      >
+        <FormControl
+          onChange={(e) => setSize(e.target.value)}
+          onKeyDown={pageSizeEnter}
+          value={size}
+          type="number"
+          placeholder="Page Size"
+          className="mr-sm-2"
+        />
+        <Button onClick={() => searchEvents()} variant="outline-info">
+          Refresh
+        </Button>
+      </Form>
+
+      <Form.Label htmlFor="basic-url">Search</Form.Label>
+
+      <Form inline className="d-flex" style={{ width: 500, marginBottom: 10 }}>
         <FormControl
           onChange={handleSearchInput}
-          value={keyword}
+          onKeyDown={handleKeyDown}
+          value={searchKey}
           type="text"
           placeholder="Search"
           className="mr-sm-2"
@@ -58,8 +108,7 @@ export default function Home() {
       </Form>
       {tickets && tickets.data && tickets.data.page.totalElements > 0 ? (
         <Fragment>
-          {/* <h2>{tickets && tickets.data.page.totalElements} results found</h2> */}
-          <Table striped bordered hover style={{ marginTop: 10 }}>
+          <Table striped bordered hover>
             <thead>
               <tr>
                 <th>#</th>
@@ -74,7 +123,7 @@ export default function Home() {
             <tbody>
               {tickets.data._embedded.events.map((event, index) => (
                 <tr key={index}>
-                  <td>{index + 1}</td>
+                  <td>{index + 1 + (page - 1) * size}</td>
                   <td>{event.name}</td>
                   <td>
                     {event._embedded && event._embedded.venues.length > 0
@@ -116,10 +165,15 @@ export default function Home() {
               ))}
             </tbody>
           </Table>
+          {tickets.data.page && <Pagination pageInfo={tickets.data.page} />}
         </Fragment>
       ) : (
         <Fragment>
-          <h2>No results found</h2>
+          {loading ? (
+            <img src={spinner} alt="Loading Spinner" />
+          ) : (
+            <h2>No results found</h2>
+          )}
         </Fragment>
       )}
     </Container>

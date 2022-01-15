@@ -8,8 +8,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route exact path="/" element={<Home />} />
-        <Route exact path="event/:id" element={<EventDetail />} />
+        {/* <Route exact path="/:keyword/:page?" element={<Home />} /> */}
+        <Route path="/" element={<Home />} />
+        <Route path="event/:id" element={<EventDetail />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

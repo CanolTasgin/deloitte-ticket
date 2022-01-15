@@ -50,12 +50,14 @@ export default function EventDetail() {
               src={details.data.images[0].url}
             />
           )}
+
           <h2>{details.data.name}</h2>
           <p>{details.data.info}</p>
           <strong>
             {details.data.ticketLimit && details.data.ticketLimit.info}
           </strong>
           <br />
+
           {details.data._embedded && details.data._embedded.venues.length > 0
             ? details.data._embedded.venues.map((venue, index) => (
                 <p key={index}>
@@ -65,17 +67,24 @@ export default function EventDetail() {
               ))
             : "No venues"}
           <br />
-          <h3>Ticketing Details</h3>
+
           {details.data.ticketing && details.data.ticketing.healthCheck && (
             <>
+              <h3>Ticketing Details</h3>
               <p>{details.data.ticketing.healthCheck.description}</p>
               <a href={details.data.ticketing.healthCheck.learnMoreUrl}>
                 Learn More
               </a>
             </>
           )}
-          <h3>Please Note</h3>
-          <p>{details.data.pleaseNote}</p>
+          <br />
+
+          {details.data.pleaseNote && (
+            <>
+              <h3>Please Note</h3>
+              <p>{details.data.pleaseNote}</p>
+            </>
+          )}
         </div>
       ) : (
         <div>Couldn't find event details. Please checkout other events.</div>
