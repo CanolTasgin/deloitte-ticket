@@ -113,7 +113,19 @@ export default function Home() {
 
   return (
     <Container fluid="sm">
-      <h1>Ticket Master Discovery</h1>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <h1>Ticket Master Discovery</h1>
+        <br />
+        <Link to="/about" style={{ textDecoration: "none", paddingLeft: 30 }}>
+          <h4>Project Details ></h4>
+        </Link>
+      </div>
       <Form.Label htmlFor="basic-url">Page Size</Form.Label>
       <Form
         inline
