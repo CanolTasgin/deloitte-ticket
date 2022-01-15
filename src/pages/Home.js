@@ -5,13 +5,17 @@ import { Container, Form, FormControl, Button } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import Pagination from "../components/Pagination";
 import spinner from "../assets/spinner.gif";
+import { FaSortDown, FaSortUp, FaRegTimesCircle } from "react-icons/fa";
 
 export default function Home() {
   let [searchParams, setSearchParams] = useSearchParams();
   const [tickets, setTickets] = useState([]);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [size, setSize] = useState(10);
   const [searchKey, setKeyword] = useState("");
+  const [sortName, setSort] = useState(false);
+  const [sortDate, setSortD] = useState(false);
 
   let page = searchParams.get("page") || 1;
   let keyword = searchParams.get("keyword") || "";
@@ -33,6 +37,45 @@ export default function Home() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (tickets && tickets.data && tickets.data.page.totalElements > 0) {
+      setEvents(tickets.data._embedded.events);
+    }
+  }, [tickets]);
+
+  function sort(type) {
+    let sorted = [];
+    if (type === "name") {
+      if (sortName) {
+        sorted = events.sort((a, b) => (a.name > b.name ? 1 : -1));
+        setSort(!sortName);
+      } else {
+        sorted = events.sort((a, b) => (a.name < b.name ? 1 : -1));
+        setSort(!sortName);
+      }
+    } else if (type === "date") {
+      if (sortDate) {
+        sorted = events.sort((a, b) =>
+          Date.parse(a.dates.start.dateTime) >
+          Date.parse(b.dates.start.dateTime)
+            ? 1
+            : -1
+        );
+        setSortD(!sortDate);
+      } else {
+        sorted = events.sort((a, b) =>
+          Date.parse(a.dates.start.dateTime) <
+          Date.parse(b.dates.start.dateTime)
+            ? 1
+            : -1
+        );
+        setSortD(!sortDate);
+      }
+    }
+
+    setEvents(sorted);
+  }
 
   const handleSearchInput = (e) => {
     e.preventDefault();
@@ -70,7 +113,7 @@ export default function Home() {
 
   return (
     <Container fluid="sm">
-      <h1>Home page</h1>
+      <h1>Ticket Master Discovery</h1>
       <Form.Label htmlFor="basic-url">Page Size</Form.Label>
       <Form
         inline
@@ -112,57 +155,76 @@ export default function Home() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Name</th>
+                <th>
+                  Name
+                  <div style={{ textAlign: "right", float: "right" }}>
+                    {sortName ? (
+                      <FaSortDown onClick={() => sort("name")} />
+                    ) : (
+                      <FaSortUp onClick={() => sort("name")} />
+                    )}
+                  </div>
+                </th>
                 <th>Venues</th>
-                <th>Date</th>
+                <th>
+                  Date
+                  <div style={{ textAlign: "right", float: "right" }}>
+                    {sortDate ? (
+                      <FaSortDown onClick={() => sort("date")} />
+                    ) : (
+                      <FaSortUp onClick={() => sort("date")} />
+                    )}
+                  </div>
+                </th>
                 <th>Time</th>
                 <th>Status</th>
                 <th>Details</th>
               </tr>
             </thead>
             <tbody>
-              {tickets.data._embedded.events.map((event, index) => (
-                <tr key={index}>
-                  <td>{index + 1 + (page - 1) * size}</td>
-                  <td>{event.name}</td>
-                  <td>
-                    {event._embedded && event._embedded.venues.length > 0
-                      ? event._embedded.venues.map((venue, index) => (
-                          <p key={index}>
-                            {venue.name}{" "}
-                            {index < event._embedded.venues.length - 1
-                              ? ", "
-                              : ""}
-                          </p>
-                        ))
-                      : "No venues"}
-                  </td>
-                  <td>
-                    {event.dates &&
-                      event.dates.start &&
-                      event.dates.start.localDate}
-                  </td>
-                  <td>
-                    {event.dates &&
-                      event.dates.start &&
-                      event.dates.start.localTime}
-                  </td>
-                  <td>
-                    {event.dates &&
-                      event.dates.status &&
-                      event.dates.status.code}
-                  </td>
-                  <td>
-                    <Link to={`/event/${event.id}`}>
-                      <Button
-                        style={{ backgroundColor: "#000000", border: "none" }}
-                      >
+              {events &&
+                events.map((event, index) => (
+                  <tr key={index}>
+                    <td>{index + 1 + (page - 1) * size}</td>
+                    <td>{event.name}</td>
+                    <td>
+                      {event._embedded && event._embedded.venues.length > 0
+                        ? event._embedded.venues.map((venue, index) => (
+                            <p key={index}>
+                              {venue.name}{" "}
+                              {index < event._embedded.venues.length - 1
+                                ? ", "
+                                : ""}
+                            </p>
+                          ))
+                        : "No venues"}
+                    </td>
+                    <td>
+                      {event.dates &&
+                        event.dates.start &&
+                        event.dates.start.localDate}
+                    </td>
+                    <td>
+                      {event.dates &&
+                        event.dates.start &&
+                        event.dates.start.localTime}
+                    </td>
+                    <td>
+                      {event.dates &&
+                        event.dates.status &&
+                        event.dates.status.code}
+                    </td>
+                    <td>
+                      <Link to={`/event/${event.id}`}>
+                        <Button
+                          style={{ backgroundColor: "#000000", border: "none" }}
                         >
-                      </Button>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                          >
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
           {tickets.data.page && <Pagination pageInfo={tickets.data.page} />}

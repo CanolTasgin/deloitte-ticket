@@ -7,6 +7,10 @@ const Numbers = ({ totalPages, num }) => {
   let currentKeyword = searchParams.get("keyword") || "";
 
   let nums = [];
+  let max = 99;
+  if (totalPages < 99) {
+    max = totalPages;
+  }
   if (totalPages <= 7) {
     for (let i = 2; i <= totalPages - 1; i++) {
       if (i === num) {
@@ -59,7 +63,7 @@ const Numbers = ({ totalPages, num }) => {
       );
     }
     // if middle
-    else if (num >= 4 && num < totalPages - 3) {
+    else if (num >= 4 && num < max - 3) {
       nums.push(
         <PageComp.Ellipsis
           onClick={() =>
@@ -96,18 +100,17 @@ const Numbers = ({ totalPages, num }) => {
           key={num + 3}
         />
       );
-    }
-    // if right sided
-    else {
+    } else {
+      //if right sided
       nums.push(
         <PageComp.Ellipsis
           onClick={() =>
-            setSearchParams({ keyword: currentKeyword, page: totalPages - 6 })
+            setSearchParams({ keyword: currentKeyword, page: max - 6 })
           }
-          key={totalPages - 6}
+          key={max - 6}
         />
       );
-      for (let i = totalPages - 5; i <= totalPages - 1; i++) {
+      for (let i = max - 5; i <= max - 1; i++) {
         if (i === num) {
           nums.push(
             <PageComp.Item key={i} active>
@@ -170,20 +173,25 @@ const Pagination = ({ pageInfo }) => {
           onClick={() =>
             setSearchParams({
               keyword: currentKeyword,
-              page: pageInfo.totalPages,
+              page: pageInfo.totalPages > 99 ? 99 : pageInfo.totalPages,
             })
           }
           key={pageInfo.totalPages}
           active={pageInfo.number === pageInfo.totalPages - 1}
         >
-          {pageInfo.totalPages}
+          {pageInfo.totalPages > 99 ? 99 : pageInfo.totalPages}
         </PageComp.Item>
 
-        {pageInfo.number + 1 < pageInfo.totalPages ? (
+        {pageInfo.number + 1 <
+        (pageInfo.totalPages > 99 ? 99 : pageInfo.totalPages) ? (
           <>
             <PageComp.Next onClick={() => setParams(pageInfo.number + 2)} />
 
-            <PageComp.Last onClick={() => setParams(pageInfo.totalPages)} />
+            <PageComp.Last
+              onClick={() =>
+                setParams(pageInfo.totalPages > 99 ? 99 : pageInfo.totalPages)
+              }
+            />
           </>
         ) : (
           <>
