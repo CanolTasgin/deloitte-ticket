@@ -177,7 +177,10 @@ const Pagination = ({ pageInfo }) => {
             })
           }
           key={pageInfo.totalPages}
-          active={pageInfo.number === pageInfo.totalPages - 1}
+          active={
+            pageInfo.number === pageInfo.totalPages - 1 ||
+            pageInfo.number === 98
+          }
         >
           {pageInfo.totalPages > 99 ? 99 : pageInfo.totalPages}
         </PageComp.Item>
